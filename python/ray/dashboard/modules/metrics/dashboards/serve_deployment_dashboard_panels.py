@@ -112,7 +112,11 @@ SERVE_DEPLOYMENT_GRAFANA_PANELS = [
         targets=[
             Target(
                 expr="sum(ray_serve_deployment_queued_queries{{{global_filters}}}) by (application, deployment)",
-                legend="{{application}}#{{deployment}}#{{replica}}",
+                legend="{{application}}#{{deployment}} (current)",
+            ),
+            Target(
+                expr="sum(ray_serve_deployment_max_queued_queries{{{global_filters}}}) by (application, deployment)",
+                legend="{{application}}#{{deployment}} (max)",
             ),
         ],
         fill=0,
@@ -127,7 +131,11 @@ SERVE_DEPLOYMENT_GRAFANA_PANELS = [
         targets=[
             Target(
                 expr="sum(ray_serve_replica_processing_queries{{{global_filters}}}) by (application, deployment, replica)",
-                legend="{{application}}#{{deployment}}#{{replica}}",
+                legend="{{application}}#{{deployment}}#{{replica}} (current)",
+            ),
+            Target(
+                expr="sum(ray_serve_deployment_max_ongoing_requests{{{global_filters}}}) by (application, deployment)",
+                legend="{{application}}#{{deployment}} (max per replica)",
             ),
         ],
         fill=0,
