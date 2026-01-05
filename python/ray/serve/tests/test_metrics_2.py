@@ -948,6 +948,65 @@ class TestHandleMetrics:
             timeseries=timeseries,
         )
 
+    def test_max_queued_and_ongoing_requests_metrics(self, metrics_start_shutdown):
+        """Test that max_queued_requests and max_ongoing_requests metrics are emitted."""
+
+        @serve.deployment(
+            max_ongoing_requests=10,
+            max_queued_requests=20,
+        )
+        def deployment_with_limits():
+            return "hello"
+
+        serve.run(deployment_with_limits.bind(), name="app1")
+        timeseries = PrometheusTimeseries()
+
+        # Check that max_queued_requests metric is emitted with correct value
+        wait_for_condition(
+            check_sum_metric_eq,
+            metric_name="ray_serve_deployment_max_queued_queries",
+            tags={"application": "app1", "deployment": "deployment_with_limits"},
+            expected=20,
+            timeseries=timeseries,
+        )
+
+        # Check that max_ongoing_requests metric is emitted with correct value
+        wait_for_condition(
+            check_sum_metric_eq,
+            metric_name="ray_serve_deployment_max_ongoing_requests",
+            tags={"application": "app1", "deployment": "deployment_with_limits"},
+            expected=10,
+            timeseries=timeseries,
+        )
+
+        # Test with -1 (no limit) for max_queued_requests
+        @serve.deployment(
+            max_ongoing_requests=5,
+            max_queued_requests=-1,
+        )
+        def deployment_no_queue_limit():
+            return "hello"
+
+        serve.run(deployment_no_queue_limit.bind(), name="app2")
+
+        # Check that max_queued_requests metric shows -1
+        wait_for_condition(
+            check_sum_metric_eq,
+            metric_name="ray_serve_deployment_max_queued_queries",
+            tags={"application": "app2", "deployment": "deployment_no_queue_limit"},
+            expected=-1,
+            timeseries=timeseries,
+        )
+
+        # Check that max_ongoing_requests metric is emitted with correct value
+        wait_for_condition(
+            check_sum_metric_eq,
+            metric_name="ray_serve_deployment_max_ongoing_requests",
+            tags={"application": "app2", "deployment": "deployment_no_queue_limit"},
+            expected=5,
+            timeseries=timeseries,
+        )
+
 
 class TestProxyStateMetrics:
     def test_proxy_status_metric(self, metrics_start_shutdown):

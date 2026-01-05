@@ -273,7 +273,11 @@ SERVE_GRAFANA_PANELS = [
         targets=[
             Target(
                 expr="sum(ray_serve_deployment_queued_queries{{{global_filters}}}) by (application, deployment)",
-                legend="{{application, deployment}}",
+                legend="{{application, deployment}} (current)",
+            ),
+            Target(
+                expr="sum(ray_serve_deployment_max_queued_queries{{{global_filters}}}) by (application, deployment)",
+                legend="{{application, deployment}} (max)",
             ),
         ],
         fill=0,

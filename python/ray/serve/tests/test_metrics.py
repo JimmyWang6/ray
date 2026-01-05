@@ -230,6 +230,8 @@ def test_serve_metrics_for_successful_connection(metrics_start_shutdown):
             # gauge
             "serve_replica_processing_queries",
             "serve_deployment_replica_healthy",
+            "serve_deployment_max_queued_queries",
+            "serve_deployment_max_ongoing_requests",
             # handle
             "serve_handle_request_counter",
         ]
